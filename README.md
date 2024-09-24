@@ -1,8 +1,11 @@
-# Chem Sketchers
-Repo containing a few different example ways of drawing molecules in web apps.
+# Chemistry Code
+Useful MWEs, functions and code snippets for chemistry.
 
-## [streamlit_ketcher](https://github.com/mik-laj/streamlit-ketcher)
+### JSME
+Web app for drawing molecules with [jsme](https://jsme-editor.github.io/), including a version using [RDKit-JS](https://github.com/rdkit/rdkit-js) to calculate descriptors for the molecule.
 
-## [jsme](https://jsme-editor.github.io/)
+### Streamlit
+Web app for drawing molecules using [streamlit_ketcher](https://github.com/mik-laj/streamlit-ketcher), showing smiles as the molecule is drawn.
 
-## [RDKit-JS](https://github.com/rdkit/rdkit-js)
+### APIs
+A couple of barebones APIs using flask/fast API to calculate rdkit and mordred descriptors and morgan fingerprints.
