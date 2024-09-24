@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>JSME Molecular Sketcher Meets RDKitJS</title>
+    <script type="text/javascript" language="javascript" src="jsme/jsme.nocache.js"></script>
+    <script src="https://unpkg.com/@rdkit/rdkit/dist/RDKit_minimal.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+        
+        initRDKitModule().then(function (instance) {
+        RDKitModule = instance;
+        console.log("version: " + RDKitModule.version());
+        });
+  
+        function jsmeOnLoad() {
+            jsmeEditor = new JSApplet.JSME("jsme_container", "800px", "400px",
+                {"options": "newlook",
+                    "guicolor": "#FFFFFF",
+                    "guiAtomColor": "#000000"
+                });
+        }
+
+        var patt = /\[([A-Za-z][a-z]?)H?\d*:\d+\]/g;
+
+        function featurise() {
+            smiles = jsmeEditor.smiles(); 
+            new_smiles = smiles.replace(patt, '<em>$1</em>');
+            document.getElementById("smiles_container").innerHTML = 'SMILES: ' + new_smiles;
+            var mol = RDKitModule.get_mol(smiles);
+            var descriptors = JSON.parse(mol.get_descriptors());
+            console.log(descriptors);
+            descriptorsSorted = Object.keys(descriptors)
+                .sort(function(a,b) {return a.localeCompare(b, undefined, {sensitivity: 'base'});})
+                .map(function(descriptor) {return [descriptor, descriptors[descriptor]]}) 
+            console.log(descriptorsSorted);
+            var output = document.getElementById("features");
+            output_text = "<table><thead><tr><th>Descriptor</th><th>Value</th></tr></thead><tbody>";
+            descriptorsSorted.forEach(function(descriptor) {
+                output_text += `<tr><td>${descriptor[0]}</td><td>${descriptor[1]}</td></tr>`
+            });
+            output_text += "</tbody></table>";
+            output.innerHTML = output_text;
+        }
+
+    </script>
+</head>
+
+<body>
+    <div id="content">
+        <h3>Molecule Descriptors Calculator</h3>
+        <p>Draw molecule using JSME, featurise using RDKitJS</p>
+        <div style="display: flex; justify-content: center">
+            <div id="jsme_container"></div>
+        </div>
+        <button id="'featurise" onclick="featurise()">Featurise</button>
+        <div><br /><span id="smiles_container"></span><br /></div>
+        <div id="features"> </div>
+    </div>
+</body>
+</html>
