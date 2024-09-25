@@ -7,6 +7,8 @@ Sam Ellis
 
 from fastapi import FastAPI
 
+import numpt as np
+
 from rdkit import Chem
 from rdkit.Chem import Descriptors, AllChem
 
@@ -27,9 +29,9 @@ app = FastAPI()
 @app.put("/api/v0/rdkit")
 def rdkit_descriptors(smiles: str):
     smiles_clean = sanitise_smiles(smiles)
-    mol = smiles_to_mol(smiles)
-    descriptors = getMolDescriptors(mol)
-    return descriptors
+    mol = smiles_to_mol(smiles_clean)
+    cleaned_descriptors = clean_nan_values(descriptors)
+    return cleaned_descriptors
 
 
 @app.put("/api/v0/mordred")
@@ -45,9 +47,21 @@ def mordred_descriptors(smiles: str):
     calc.register(SLogP.SLogP())
     calc.register(VdwVolumeABC.VdwVolumeABC())
     smiles_clean = sanitise_smiles(smiles)
-    mol = smiles_to_mol(smiles)
+    mol = smiles_to_mol(smiles_clean)
     descriptors = calc(mol)
     return descriptors.asdict()
+
+# Because some rdkit descriptors are nan, and the fastAPI json_encoder doesn't convert these to null,
+# need to do it manually....
+def clean_nan_values(data):
+    """Recursively replace NaN with None in dict or list."""
+    if isinstance(data, dict):
+        return {k: clean_nan_values(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [clean_nan_values(item) for item in data]
+    elif isinstance(data, float) and np.isnan(data):
+        return None  # Replace NaN with None (null in JSON)
+    return data
 
 
 def sanitise_smiles(smiles):
